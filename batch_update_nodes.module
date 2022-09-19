@@ -1,0 +1,46 @@
+<?php
+use Drupal\node\Entity\Node;
+
+function batch_update_nodes_update_nodes($nids, $op, &$context){
+  $message = 'Updating Nodes ...';
+  $results = isset($context['results']) ? $context['results'] : [];
+  foreach ($nids as $nid) {
+    $node = Node::load($nid);
+    $update = false;
+    switch ($op) {
+      case 'go':
+        if (!$node->get('field_summary')->isEmpty()) {
+          $node->field_temp = $node->field_summary;
+          $node->field_temp->format = 'formatted_text';
+          $update = true;
+        }
+        break;
+      case 'return':
+        if (!$node->get('field_temp')->isEmpty()) {
+          $node->field_summary = $node->field_temp;
+          $update = true;
+        }
+        break;
+    }
+    if ($update) {
+      $results[] = $node->save();
+    }
+  }
+  $context['message'] = $message;
+  $context['results'] = $results;
+}
+
+function batch_update_nodes_update_finished($success, $results, $operations) {
+  // The 'success' parameter means no fatal PHP errors were detected. All
+  // other error management should be handled using 'results'.
+  if ($success) {
+    $message = \Drupal::translation()->formatPlural(
+      count($results),
+      'One glossary term processed.', '@count glossary terms processed.'
+    );
+  }
+  else {
+    $message = t('Finished with an error.');
+  }
+  \Drupal::messenger()->addStatus($message);
+}
