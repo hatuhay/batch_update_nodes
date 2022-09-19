@@ -1,0 +1,7 @@
+update_nodes.form:
+  path: '/admin/structure/update_nodes'
+  defaults:
+    _form: '\Drupal\adl_update_glossary\Form\UpdateGlossaryForm'
+    _title: 'Batch Update Nodes Fields'
+  requirements:
+    _permission: 'access content'
